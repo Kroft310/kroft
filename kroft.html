@@ -795,11 +795,6 @@ input[type="time"]::-webkit-date-and-time-value,input[type="date"]::-webkit-date
   opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap}
 .toast::before{content:"";width:16px;height:16px;flex:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e0ac55' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/16px no-repeat}
 .toast.on{opacity:1;transform:translate(-50%,0)}
-
-html.native body > .wrap > .top,html.native .screen .wrap > .top{padding-top:4px!important}
-html.native body > .wrap{padding-top:70px!important}
-html.native .screen .wrap{padding-top:70px!important}
-html.native .drawer{padding-top:10px!important}
 </style>
 </head>
 <body>
@@ -1116,8 +1111,6 @@ html.native .drawer{padding-top:10px!important}
 
 <script>
 const KS = window.KS || window.localStorage;
-// в приложении на телефоне (Scriptable) над страницей уже есть полоса «Close» — шапку поднимаем вплотную к ней
-if (window.KROFT_NATIVE) document.documentElement.classList.add("native");
 const CATS = {
   out:["Продукты","Топливо","Сигареты","Ремонт машины","Коммунальные платежи","Аренда","Подписки","Транспорт","Связь","Кафе","Здоровье","Покупки","Развлечения","Другое"],
   in:["Зарплата","Премия","Подработка","Подарок","Другое"]
