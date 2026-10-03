@@ -795,6 +795,10 @@ input[type="time"]::-webkit-date-and-time-value,input[type="date"]::-webkit-date
   opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap}
 .toast::before{content:"";width:16px;height:16px;flex:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e0ac55' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/16px no-repeat}
 .toast.on{opacity:1;transform:translate(-50%,0)}
+
+.dver{margin-top:auto;padding-top:10px;text-align:center;font-size:11px;color:var(--muted);letter-spacing:.06em}
+.dver:empty{display:none}
+.dver:not(:empty) + .dicons{margin-top:8px}
 </style>
 </head>
 <body>
@@ -886,6 +890,7 @@ input[type="time"]::-webkit-date-and-time-value,input[type="date"]::-webkit-date
     <button class="dsec dstart" id="secStart">
       <span>Точка старта</span><small id="secStartVal"></small><i aria-hidden="true">›</i>
     </button>
+    <div class="dver" id="dVer"></div>
     <div class="dicons">
       <button type="button" class="dicon" id="icNotif" aria-label="Уведомления"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/><path d="M12 3v2"/></svg><small id="icNotifVal"></small></button>
       <button type="button" class="dicon" id="icStart" aria-label="Точка старта"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h11l-2 3.5L16 11H5"/><circle cx="5" cy="21" r=".6" fill="currentColor"/></svg></button>
@@ -3262,6 +3267,9 @@ $("secNotif").onclick = () => { drawer(false);
 $("icNotif").onclick = () => $("secNotif").click();
 $("icStart").onclick = () => $("secStart").click();
 setInterval(() => { $("icNotifVal").textContent = $("secNotifVal").textContent; }, 700);  // у точки старта — только значок, без даты
+
+/* номер версии приложения (на телефоне) — видно внизу меню, удобно проверять обновления */
+if (window.KROFT_VERSION) $("dVer").textContent = "KROFT · версия " + window.KROFT_VERSION;
 /* пока открыто окно, меню или экран поверх — главный экран под ним не листается */
 let lockY = 0;
 function updateLock(){
