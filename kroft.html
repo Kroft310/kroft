@@ -1122,7 +1122,7 @@ const WD = ["вс","пн","вт","ср","чт","пт","сб"];
 const LS = "groshi_v1";
 
 let entries = [];
-try { entries = JSON.parse(localStorage.getItem(LS) || "[]"); } catch(e) { entries = []; }
+try { entries = JSON.parse(KS.getItem(LS) || "[]"); } catch(e) { entries = []; }
 // вся статистика: в тратах копейки всегда вверх до целой гривны (3,20 → 4), и для старых записей тоже
 const LSHID = "groshi_hidden";
 let hidden = new Set(); try { hidden = new Set(JSON.parse(KS.getItem(LSHID) || "[]")); } catch(e){}
@@ -1132,7 +1132,7 @@ const shopKey = x => (x.note || "").split(/ · |,/)[0].toLowerCase().replace(/ё
 function applyNeedMem(arr){ return arr.map(x => { if (x.type !== "out") return x; const k = shopKey(x), v = needMem["id:" + x.id] || (k && needMem[k]); return v && v !== x.need ? Object.assign({}, x, { need: v }) : x; }); }
 const ceilOut = arr => arr.map(x => x && x.type === "out" && typeof x.amount === "number" && x.amount % 1 ? Object.assign({}, x, { amount: Math.ceil(x.amount - 1e-9) }) : x);
 entries = applyNeedMem(ceilOut(entries));
-function saveLocal(){ try { localStorage.setItem(LS, JSON.stringify(entries)); } catch(e){} }
+function saveLocal(){ try { KS.setItem(LS, JSON.stringify(entries)); } catch(e){} }
 
 const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(2,"0");
@@ -1144,7 +1144,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":
 const sum = (arr, t) => arr.filter(x=>x.type===t).reduce((a,x)=>a+x.amount,0);
 const LSS = "groshi_start";
 let start = {};
-try { start = JSON.parse(localStorage.getItem(LSS) || "{}") || {}; } catch(e) { start = {}; }
+try { start = JSON.parse(KS.getItem(LSS) || "{}") || {}; } catch(e) { start = {}; }
 const afterStart = x => !start.date || x.date > start.date || (x.date === start.date && (x.ts||0) >= (start.ts||0));
 const stashTotal = () => jarList().reduce((a,j) => a + jarBal(j.id), 0);
 const effCash = x => x.type==="in" ? x.amount : x.type==="out" ? -x.amount : x.type==="save" ? -x.amount : x.type==="take" ? x.amount : 0;
@@ -1164,14 +1164,14 @@ function cashNow(){
   return (start.date ? (start.free||0) : 0) + sum(L,"in") - sum(L,"out") - sum(L,"save") + sum(L,"take");
 }
 function saveStart(){
-  try { localStorage.setItem(LSS, JSON.stringify(start)); } catch(e){}
+  try { KS.setItem(LSS, JSON.stringify(start)); } catch(e){}
   if (col) col.doc("_start").set({ kind:"start", json: JSON.stringify(start) })
     .catch(err => { $("sync").textContent = "Точка старта не сохранилась в аккаунте (" + ((err && err.code) || "ошибка") + ") — пока только на этом устройстве"; });
 }
 const LSJ = "groshi_jars";
 const normCat = (kind, c) => CATS[kind] ? (CATS[kind].includes(c) ? c : "Другое") : c;
 let jars = [];
-try { jars = JSON.parse(localStorage.getItem(LSJ) || "[]"); } catch(e) { jars = []; }
+try { jars = JSON.parse(KS.getItem(LSJ) || "[]"); } catch(e) { jars = []; }
 const jarOf = x => x.jar || "main";
 function jarList(){
   // удалённые накопления скрываются, но их записи остаются — так суммы денег не «пропадают»
@@ -1193,7 +1193,7 @@ const jarStart = id => start.date && start.jars ? (start.jars[id] || 0) : 0;
 const jarBal = id => jarStart(id) + entries.filter(x=>jarOf(x)===id && afterStart(x)).reduce((a,x)=> a + (x.type==="save"?x.amount: x.type==="take"?-x.amount:0), 0);
 let pendingJars = new Set();
 function saveJars(){
-  try { localStorage.setItem(LSJ, JSON.stringify(jars)); } catch(e){}
+  try { KS.setItem(LSJ, JSON.stringify(jars)); } catch(e){}
   if (col) col.doc("_jars").set({ kind:"jars", listJson: JSON.stringify(jars) })
     .then(() => { pendingJars.clear(); })
     .catch(err => { $("sync").textContent = "Накопления не сохранились в аккаунте (" + ((err && err.code) || "ошибка") + ") — пока они только на этом устройстве"; });
@@ -1918,12 +1918,12 @@ let col = null;
         const remote = readJarsMeta(meta.data() || {});
         const keep = jars.filter(j => pendingJars.has(j.id) && !remote.some(r => r.id === j.id));
         jars = remote.concat(keep);
-        try { localStorage.setItem(LSJ, JSON.stringify(jars)); } catch(e){}
+        try { KS.setItem(LSJ, JSON.stringify(jars)); } catch(e){}
       }
       const sm = s.docs.find(d => d.id === "_start");
-      if (sm && sm.exists){ try { start = JSON.parse((sm.data()||{}).json || "{}") || {}; localStorage.setItem(LSS, JSON.stringify(start)); } catch(e){} }
+      if (sm && sm.exists){ try { start = JSON.parse((sm.data()||{}).json || "{}") || {}; KS.setItem(LSS, JSON.stringify(start)); } catch(e){} }
       const smem = s.docs.find(d => d.id === "_shopmem");
-      if (smem && smem.exists && Date.now() - memTouched > 2500){ try { shopMem = JSON.parse((smem.data()||{}).json || "{}") || {}; localStorage.setItem(LSM, JSON.stringify(shopMem)); } catch(e){} }
+      if (smem && smem.exists && Date.now() - memTouched > 2500){ try { shopMem = JSON.parse((smem.data()||{}).json || "{}") || {}; KS.setItem(LSM, JSON.stringify(shopMem)); } catch(e){} }
       const fxd = s.docs.find(d => d.id === "_fixed");
       if (fxd && fxd.exists){ try { fixed = JSON.parse((fxd.data()||{}).json || "{}") || {}; KS.setItem(LSF, JSON.stringify(fixed)); } catch(e){} }
       const fxd2 = s.docs.find(d => d.id === "_fx");
@@ -1933,7 +1933,7 @@ let col = null;
       const cd = s.docs.find(d => d.id === "_cars");
       if (cd && cd.exists){ try { const c2 = JSON.parse((cd.data()||{}).json || "[]"); if (c2 && c2.length){ cars = c2; if (!cars.some(c => c.id === carId)) carId = cars[0].id; KS.setItem(LSCS, JSON.stringify(cars)); } } catch(e){} }
       const sh = s.docs.find(d => d.id === "_shop");
-      if (sh && sh.exists && Date.now() - shopTouched > 2500){ try { shop = JSON.parse((sh.data()||{}).json || "[]") || []; localStorage.setItem(LSH, JSON.stringify(shop)); drawShop(); } catch(e){} }
+      if (sh && sh.exists && Date.now() - shopTouched > 2500){ try { shop = JSON.parse((sh.data()||{}).json || "[]") || []; KS.setItem(LSH, JSON.stringify(shop)); drawShop(); } catch(e){} }
       const hid = s.docs.find(d => d.id === "_hidden");
       if (hid && hid.exists){ try { hidden = new Set(JSON.parse((hid.data()||{}).json || "[]")); KS.setItem(LSHID, JSON.stringify([...hidden])); } catch(e){} }
       entries = s.docs.filter(d => d.id[0] !== "_").map(d => Object.assign({}, d.data(), { id: d.id }))
@@ -1956,10 +1956,10 @@ let col = null;
 /* ===== Магазин: список покупок ===== */
 const LSH = "groshi_shop";
 let shop = [], shopTouched = 0;
-try { shop = JSON.parse(localStorage.getItem(LSH) || "[]") || []; } catch(e) { shop = []; }
+try { shop = JSON.parse(KS.getItem(LSH) || "[]") || []; } catch(e) { shop = []; }
 function saveShop(){
   shopTouched = Date.now();
-  try { localStorage.setItem(LSH, JSON.stringify(shop)); } catch(e){}
+  try { KS.setItem(LSH, JSON.stringify(shop)); } catch(e){}
   if (col) col.doc("_shop").set({ kind:"shop", json: JSON.stringify(shop) }).catch(()=>{});
 }
 function drawShop(){
@@ -1992,11 +1992,11 @@ function shopCatList(){ return CATS.out.slice(); }
 /* ---- автокатегория: сначала то, что вы уже выбирали, потом словарь ---- */
 const LSM = "groshi_shopmem";
 let shopMem = {}, memTouched = 0;
-try { shopMem = JSON.parse(localStorage.getItem(LSM) || "{}") || {}; } catch(e) { shopMem = {}; }
+try { shopMem = JSON.parse(KS.getItem(LSM) || "{}") || {}; } catch(e) { shopMem = {}; }
 const normName = v => v.toLowerCase().replace(/ё/g,"е").replace(/['’ʼ`]/g,"").replace(/[«»".,!?()]/g," ").replace(/\s+/g," ").trim();
 function saveMem(){
   memTouched = Date.now();
-  try { localStorage.setItem(LSM, JSON.stringify(shopMem)); } catch(e){}
+  try { KS.setItem(LSM, JSON.stringify(shopMem)); } catch(e){}
   if (col) col.doc("_shopmem").set({ kind:"shopmem", json: JSON.stringify(shopMem) }).catch(()=>{});
 }
 // порядок важен: сначала узкие категории, «Продукты» — в конце
