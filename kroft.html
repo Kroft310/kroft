@@ -808,6 +808,18 @@ input[type="time"]::-webkit-date-and-time-value,input[type="date"]::-webkit-date
 .lbar{height:6px;background:rgba(255,255,255,.07);margin:6px 0 4px}.lbar i{display:block;height:100%;background:var(--in)}
 .lim.soon .lbar i{background:var(--acc)}.lim.over .lbar i{background:var(--out)}
 .lim small{font-size:12px;color:var(--muted)}.lim.over small{color:var(--out)}.lim.soon small{color:var(--acc)}
+.svbtn{margin-top:12px}
+.sv-sec{margin-top:16px}.sv-sec>.cl-t{color:var(--acc);margin-bottom:6px}
+details.sv-sec summary{cursor:pointer;list-style:none;margin-bottom:6px}details.sv-sec summary::after{content:" ›"}details.sv-sec[open] summary::after{content:" ⌄"}
+.sv-i{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.sv-i input{flex:none;width:18px;height:18px;accent-color:#e0ac55}
+.sv-t{flex:1;min-width:0}.sv-t b{display:block;font-weight:600;font-size:14px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sv-t small{display:block;font-size:12px;color:var(--muted);margin-top:2px}.sv-t i{font-style:normal}
+.sv-w{color:var(--acc)}.sv-d{color:var(--out)}
+.sv-a{flex:none;font-family:"Exo 2","Onest",sans-serif;font-weight:700;font-size:14px}.sv-a.out,.sv-ok b.out{color:var(--out)}.sv-a.in,.sv-ok b.in{color:var(--in)}
+.sv-ok{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}
+.sv-ok span small{display:block;color:var(--muted);font-size:12px}.sv-ok b{font-family:"Exo 2","Onest",sans-serif;white-space:nowrap}
+.sv-go{margin-top:10px}.sv-del{background:rgba(255,92,108,.1)!important;color:var(--out)!important;box-shadow:inset 0 0 0 1px rgba(255,92,108,.5)}
 .recsearch{margin-top:12px}.recsearch input{width:100%;box-sizing:border-box;padding:12px 14px;font-size:16px;color:var(--ink);background:rgba(5,4,3,.85);border:1px solid var(--line);border-radius:0}
 .jgoal{display:block;font-style:normal;font-size:11px;color:var(--muted);margin-top:3px;position:relative;padding-bottom:5px}
 .jgoal s{position:absolute;left:0;bottom:0;height:2px;background:var(--acc);text-decoration:none}
@@ -816,12 +828,6 @@ input[type="time"]::-webkit-date-and-time-value,input[type="date"]::-webkit-date
 #secDebt{margin-top:8px}
 
 #secRecon{margin-top:8px}
-.rcrow{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line)}
-.rcrow input{width:20px;height:20px;accent-color:#e0ac55;flex:none}
-.rcrow span{flex:1;min-width:0}.rcrow span b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rcrow span small{display:block;font-size:12px;color:var(--muted)}
-.rcrow em{font-style:normal;font-family:"Exo 2","Onest",sans-serif;font-weight:700;white-space:nowrap}.rcrow em.r{color:var(--out)}.rcrow em.g{color:var(--in)}
-.rcrow.ro{padding-left:4px}
 </style>
 </head>
 <body>
@@ -910,7 +916,7 @@ input[type="time"]::-webkit-date-and-time-value,input[type="date"]::-webkit-date
       <span>Уведомления</span><small id="secNotifVal"></small><i aria-hidden="true">›</i>
     </button>
     <button class="dsec" id="secRecon">
-      <span>Сверка с выпиской</span><small id="secReconVal"></small><i aria-hidden="true">›</i>
+      <span>Сверка с выпиской</span><i aria-hidden="true">›</i>
     </button>
     <button class="dsec" id="secDebt">
       <span>Долги</span><small id="secDebtVal"></small><i aria-hidden="true">›</i>
@@ -967,22 +973,12 @@ input[type="time"]::-webkit-date-and-time-value,input[type="date"]::-webkit-date
       <button class="sv" data-f="out" aria-pressed="false">Траты</button>
     </div>
     <div class="recsearch"><input type="search" id="recQ" placeholder="Поиск: АТБ, эвакуатор, кафе…" autocomplete="off"></div>
+    <label class="btn imp-btn svbtn" for="svFile">Сверить с выпиской</label>
+    <input type="file" id="svFile" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden>
+    <div id="svOut"></div>
     <div class="recsum" id="recSum"></div>
     <section class="recsec"><div id="list"></div></section>
     <button class="jdel recmore" id="recMore" hidden>Показать ещё</button>
-  </div>
-</div>
-
-<div class="screen" id="reconScreen" hidden>
-  <div class="wrap">
-    <div class="top">
-      <button class="back" id="reconBack" aria-label="Назад">‹</button>
-      <h1>Сверка</h1>
-    </div>
-    <p class="sthint" style="margin-top:14px">Загрузи свежую выписку из Приват24 (Excel или CSV) — KROFT сравнит её со своими записями и покажет, каких трат и доходов не хватает. Нужное добавишь одной кнопкой.</p>
-    <label class="btn imp-btn" for="reconFile">Загрузить выписку</label>
-    <input type="file" id="reconFile" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden>
-    <div id="reconOut"></div>
   </div>
 </div>
 
@@ -2647,6 +2643,135 @@ function impPreview(withTr){
   };
 }
 
+// ===== «Сверка с выпиской»: выписка банка ↔ записи KROFT (вручную и Apple Pay) =====
+// ничего не меняется без нажатия: показываем, что совпало, чего нет в KROFT и что лишнее (дубли)
+const SV_MCC = [[/^(5411|5412|5422|5441|5451|5462|5499)$/, "Продукты"], [/^(5541|5542|5983|5172)$/, "Топливо"],
+  [/^(5812|5813|5814)$/, "Кафе"], [/^(4111|4121|4131|7523)$/, "Транспорт"], [/^(4812|4814)$/, "Связь"],
+  [/^(5912|8011|8021|8062|8099)$/, "Здоровье"], [/^(5531|5533|7538|7542|7549)$/, "Ремонт машины"], [/^5993$/, "Сигареты"],
+  [/^4900$/, "Коммунальные платежи"], [/^(4899|5815|5817|5818)$/, "Подписки"]];
+let svBank = [], svRes = null, svName = "", svKind = "";
+function svDate(v){
+  // время сохраняем «как на телефоне», чтобы в списке записей оно показывалось верно
+  if (v instanceof Date) return { d: iso(v), t: v.getTime() };
+  if (typeof v === "number"){ const u = new Date(Math.round((v - 25569) * 86400000));
+    const dt = new Date(u.getUTCFullYear(), u.getUTCMonth(), u.getUTCDate(), u.getUTCHours(), u.getUTCMinutes()); return { d: iso(dt), t: dt.getTime() }; }
+  return impDate(v);
+}
+const svHM = t => { const d = new Date(t); return pad(d.getHours()) + ":" + pad(d.getMinutes()); };
+async function svRead(f){
+  let rows;
+  if (/\.csv$/i.test(f.name)){ const buf = await f.arrayBuffer(); let txt = new TextDecoder("utf-8").decode(buf);
+    if ((txt.match(/\ufffd/g)||[]).length > 5) txt = new TextDecoder("windows-1251").decode(buf); rows = parseCSV(txt); }
+  else { await loadXLSX(); const wb = XLSX.read(await f.arrayBuffer(), { type:"array", cellDates:true }); rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header:1, raw:true }); }
+  const hi = rows.findIndex(r => r && r.some(c => /^\s*дата/i.test(String(c||""))) && r.some(c => /сум/i.test(String(c||""))));
+  if (hi < 0) throw new Error("не нашёл заголовки «Дата» и «Сума» — пришли файл в чат, подстрою");
+  const H = rows[hi].map(c => String(c||"").toLowerCase()), cl = re => H.findIndex(h => re.test(h));
+  const cD = cl(/дата/), cS = (() => { const i = H.findIndex(h => /сум/.test(h) && /карт/.test(h)); return i >= 0 ? i : cl(/сум/); })();
+  const cO = cl(/опис|описан|призначен|деталі|детали|назначен/), cK = cl(/категор/), cM = cl(/^\s*mcc/);
+  const mono = cM >= 0 || H.some(h => /залишок після/.test(h));
+  const out = [];
+  rows.slice(hi+1).forEach((r, i) => {
+    if (!r || r[cD] == null || r[cS] == null) return;
+    const dt = svDate(r[cD]), a = impNum(r[cS]); if (!dt || a == null || !a) return;
+    const desc = cO >= 0 ? String(r[cO]||"").trim() : "", bc = cK >= 0 ? String(r[cK]||"").trim() : "", mcc = cM >= 0 ? String(r[cM]||"").trim() : "";
+    const x = { k: "b" + i, type: a < 0 ? "out" : "in", raw: Math.abs(a), amount: a < 0 ? Math.ceil(-a - 1e-9) : Math.round(a*100)/100, date: dt.d, ts: dt.t, desc };
+    if (mono){
+      if (/^(6010|6011)$/.test(mcc)) x.cash = true;
+      else if (/^(4829|6012|6538|6540)$/.test(mcc) || /^(переказ|від:|на картку|з картки|поповнення|з (білої|чорної))/i.test(desc)) x.transfer = true;
+      const m = SV_MCC.find(([re]) => re.test(mcc)); x.cat = x.type === "in" ? "Другое" : m ? m[1] : (guessCat(desc) || "Другое");
+    } else if (x.type === "out"){
+      const c = impCat(bc, desc); if (c.own) return; x.cat = c.cat; if (c.transfer) x.transfer = true; if (c.cash) x.cash = true;
+    } else {
+      if (/своєї картки|свою картку|своей карты/i.test(bc)) return;
+      x.cat = /зарплат|заробітн|заработн/i.test(desc) ? "Зарплата" : "Другое"; if (/переказ|перевод|перекази/i.test(bc + " " + desc)) x.transfer = true;
+    }
+    if (x.type === "in" && /зарплат|заробітн|заработн/i.test(desc)) x.cat = "Зарплата";
+    out.push(x);
+  });
+  return { rows: out, kind: mono ? "mono" : "privat" };
+}
+function svMatch(){
+  // сравниваем только то, что после точки старта (раньше — это статистика из выписки, баланс не трогает)
+  const bank = svBank.filter(b => afterStart({ date: b.date, ts: b.ts }));
+  if (!bank.length) return { bank, ok: [], miss: [], extra: [], from: "", to: "" };
+  const ds = bank.map(b => b.date).sort(), from = ds[0], to = ds[ds.length-1];
+  const kr = entries.filter(x => (x.type === "out" || x.type === "in") && !x.transfer && afterStart(x) && x.date >= from && x.date <= to);
+  const dd = (a, b) => Math.abs(parse(a) - parse(b)) / 864e5;
+  const pairs = [];
+  bank.forEach(b => kr.forEach(x => {
+    if (x.type !== b.type) return; const da = Math.abs(x.amount - b.amount), dy = dd(x.date, b.date);
+    if (da > 1 || dy > 1) return;
+    const tm = x.ts && x.ts > 1e11 && x.date === b.date ? Math.min(Math.abs(x.ts - b.ts) / 6e4, 600) / 1000 : 0.6;
+    pairs.push({ b, x, s: dy * 100 + da * 10 + tm - (x.src === "applepay" ? 0.3 : 0) });
+  }));
+  pairs.sort((p, q) => p.s - q.s);
+  const ub = new Set(), ux = new Set(), ok = [];
+  pairs.forEach(p => { if (ub.has(p.b.k) || ux.has(p.x.id)) return; ub.add(p.b.k); ux.add(p.x.id); ok.push(p); });
+  const miss = bank.filter(b => !ub.has(b.k));
+  const extra = kr.filter(x => !ux.has(x.id)).map(x => {
+    const tw = ok.find(p => p.x.type === x.type && Math.abs(p.x.amount - x.amount) <= 1 && dd(p.x.date, x.date) <= 1);
+    return { x, dup: tw ? tw.x : null };
+  });
+  return { bank, ok, miss, extra, from, to };
+}
+const svSrc = x => x.src === "applepay" ? "Apple Pay" : x.src === "sverka" ? "из сверки" : x.src === "privat" ? "выписка" : "вручную";
+const svDay = s => { const d = parse(s); return d.getDate() + " " + MS[d.getMonth()]; };
+function svDraw(){
+  const r = svRes = svMatch(), bankNm = svKind === "mono" ? "Монобанк" : "ПриватБанк";
+  if (!r.bank.length){ $("svOut").innerHTML = `<div class="cl-box warn"><div class="cl-t">Нечего сверять</div><p>Все операции в файле — до точки старта. Сверка смотрит только то, что после неё: раньше — это статистика из выписки, она на остаток не влияет.</p></div>`; return; }
+  const bO = r.bank.filter(b => b.type === "out").reduce((a,b) => a + b.amount, 0);
+  const kO = r.ok.filter(p => p.x.type === "out").reduce((a,p) => a + p.x.amount, 0) + r.extra.filter(e => e.x.type === "out").reduce((a,e) => a + e.x.amount, 0);
+  const row = (id, chk, title, sub, sign, amt, cls) => `<label class="sv-i"><input type="checkbox" data-sv="${id}"${chk ? " checked" : ""}><span class="sv-t"><b>${esc(title)}</b><small>${sub}</small></span><span class="sv-a ${cls}">${sign}${money(amt)}</span></label>`;
+  const missH = r.miss.map(b => row("m:" + b.k, !b.transfer && !b.cash, b.desc || b.cat,
+    `${svDay(b.date)} · ${svHM(b.ts)} · ${esc(b.cat)}${b.transfer ? ' · <i class="sv-w">перевод</i>' : ""}${b.cash ? ' · <i class="sv-w">наличные</i>' : ""}`,
+    b.type === "in" ? "+" : "−", b.amount, b.type)).join("");
+  const extH = r.extra.map(e => { const x = e.x, tm = recTime(x);
+    return row("x:" + x.id, !!e.dup, x.note || normCat(x.type, x.cat),
+      `${svDay(x.date)}${tm ? " · " + tm : ""} · ${svSrc(x)} · ${e.dup ? '<i class="sv-d">дубль: такая же есть (' + svSrc(e.dup) + ')</i>' : '<i class="sv-w">нет в этой выписке</i>'}`,
+      x.type === "in" ? "+" : "−", x.amount, x.type); }).join("");
+  const okH = r.ok.map(p => `<div class="sv-ok"><span>${esc(p.x.note || normCat(p.x.type, p.x.cat))}<small>${svDay(p.b.date)} · ${svHM(p.b.ts)} · ${svSrc(p.x)}</small></span><b class="${p.x.type}">${p.x.type === "in" ? "+" : "−"}${money(p.x.amount)}</b></div>`).join("");
+  $("svOut").innerHTML = `<div class="cl-plan sv">
+    <div class="cl-h"><span>${bankNm} · «${esc(svName)}»</span><b>${svDay(r.from)}${r.from !== r.to ? " – " + svDay(r.to) : ""}</b></div>
+    <div class="cl-r"><span>Траты по выписке</span><b><i class="nd">${money(bO)}</i></b></div>
+    <div class="cl-r"><span>Траты в KROFT за те же дни</span><b><i class="nd">${money(kO)}</i></b></div>
+    <div class="cl-r"><span>Разница</span><b><i style="color:${Math.abs(kO - bO) < 1 ? "var(--in)" : "var(--out)"}">${kO >= bO ? "+" : "−"}${money(Math.abs(kO - bO))}</i></b></div>
+    ${svKind === "mono" ? `<p class="sthint">Если перевод с Привата на Моно уже записан тратой, покупки с Моно не добавляй — посчитаются дважды.</p>` : ""}
+    <div class="sv-sec"><div class="cl-t">Нет в KROFT · ${r.miss.length}</div>${missH || `<p class="sthint">Всё из выписки уже записано.</p>`}
+      ${r.miss.length ? `<button class="btn imp-btn sv-go" id="svAdd">Добавить отмеченные</button>` : ""}</div>
+    <div class="sv-sec"><div class="cl-t">Лишнее в KROFT · ${r.extra.length}</div>${extH || `<p class="sthint">Лишних записей нет.</p>`}
+      ${r.extra.length ? `<p class="sthint">«Дубль» — одна покупка записана дважды. «Нет в этой выписке» — может быть оплата с другой карты или наличными, проверь сам.</p><button class="btn imp-btn sv-go sv-del" id="svDel">Удалить отмеченные</button>` : ""}</div>
+    <details class="sv-sec"><summary class="cl-t">Совпало · ${r.ok.length}</summary>${okH}</details>
+  </div>`;
+  const cnt = p => [...$("svOut").querySelectorAll(`input[data-sv^="${p}"]:checked`)].map(i => i.dataset.sv.slice(2));
+  const lbl = () => { if ($("svAdd")) $("svAdd").textContent = "Добавить отмеченные (" + cnt("m:").length + ")"; if ($("svDel")) $("svDel").textContent = "Удалить отмеченные (" + cnt("x:").length + ")"; };
+  $("svOut").onchange = lbl; lbl();
+  if ($("svAdd")) $("svAdd").onclick = () => {
+    const ks = cnt("m:"); if (!ks.length) return toast("Ничего не отмечено");
+    const add = r.miss.filter(b => ks.includes(b.k));
+    confirmBox({ title: "Добавить " + add.length + " шт.?", ok: "Добавить",
+      html: `<p>В KROFT появятся записи из выписки на <b>${money(add.reduce((a,b) => a + (b.type === "out" ? b.amount : 0), 0))}</b> трат${add.some(b => b.type === "in") ? " и " + money(add.filter(b => b.type === "in").reduce((a,b) => a + b.amount, 0)) + " зачислений" : ""}. Удалить их потом можно как обычные записи.</p>`,
+      onOk: () => {
+        const made = add.map(b => ({ id: "s" + b.ts.toString(36) + "_" + Math.round(b.raw * 100) + "_" + Math.random().toString(36).slice(2,5), type: b.type, amount: b.amount, cat: b.cat,
+          need: b.type === "out" ? defNeed(b.cat) : "", note: (b.desc || b.cat).slice(0,120) + (b.transfer ? " · перевод" : "") + (b.cash ? " · наличные" : ""),
+          date: b.date, ts: b.ts, src: "sverka", bank: svKind, jar: "", jarName: "" }));
+        entries.push(...applyNeedMem(made)); saveLocal(); if (col) made.forEach(x => col.doc(x.id).set(x).catch(()=>{}));
+        render(); svDraw(); toast("Добавлено: " + made.length); return true; } });
+  };
+  if ($("svDel")) $("svDel").onclick = () => {
+    const ids = cnt("x:"); if (!ids.length) return toast("Ничего не отмечено");
+    const del = entries.filter(x => ids.includes(x.id));
+    confirmBox({ title: "Удалить " + del.length + " шт.?", ok: "Удалить", danger: true,
+      html: `<p>Уйдут записи на <b>${money(del.reduce((a,x) => a + x.amount, 0))}</b>:</p><p>${del.map(x => esc(x.note || normCat(x.type, x.cat)) + " · " + money(x.amount)).join("<br>")}</p>`,
+      onOk: () => { ids.forEach(id => deleteEntry(id)); svDraw(); toast("Удалено: " + ids.length); return true; } });
+  };
+}
+$("svFile").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  $("svOut").innerHTML = `<p class="sthint">Читаю «${esc(f.name)}»…</p>`;
+  try { const r = await svRead(f); svBank = r.rows; svKind = r.kind; svName = f.name; svDraw(); }
+  catch(err){ $("svOut").innerHTML = `<div class="err">Не получилось прочитать файл: ${esc(err.message || String(err))}</div>`; }
+};
+
 // ===== экран «Все записи» =====
 let recF = "all", recLimit = 150;
 // время записи: из выписки Привата — как в выписке (время Киева сохранено «как есть»), остальное — по часам телефона;
@@ -3511,78 +3636,14 @@ function drawJarGoalBox(){
 }
 new MutationObserver(() => drawJarGoalBox()).observe($("jarScreen"), { attributes: true, attributeFilter: ["hidden"] });
 
-/* ===== Сверка с выпиской: чего не хватает в KROFT ===== */
-async function readStatement(f){
-  let rows;
-  if (/\.csv$/i.test(f.name)){ const buf = await f.arrayBuffer(); let txt = new TextDecoder("utf-8").decode(buf);
-    if ((txt.match(/\ufffd/g)||[]).length > 5) txt = new TextDecoder("windows-1251").decode(buf); rows = parseCSV(txt); }
-  else { await loadXLSX(); const wb = XLSX.read(await f.arrayBuffer(), { type:"array", cellDates:true }); rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header:1, raw:true }); }
-  const hi = rows.findIndex(r => r && r.some(c => /^\s*дата/i.test(String(c||""))) && r.some(c => /сум/i.test(String(c||""))));
-  if (hi < 0) throw new Error("не нашёл заголовки «Дата» и «Сума»");
-  const H = rows[hi].map(c => String(c||"").toLowerCase()), col = re => H.findIndex(h => re.test(h));
-  const cD = col(/дата/), cS = (() => { let i = H.findIndex(h => /сум/.test(h) && /карт/.test(h)); return i >= 0 ? i : col(/сум/); })();
-  const cO = col(/опис|описан|призначен|деталі|детали|назначен/), cK = col(/категор/), cC = col(/картк|карта/);
-  const out = [], seenK = {}, cards = new Set();
-  rows.slice(hi+1).forEach(r => { if (r && r[cC] != null) { const m = String(r[cC]).match(/(\d{4})\s*$/); if (m) cards.add(m[1]); } });
-  for (const r of rows.slice(hi+1)){
-    if (!r || r[cD] == null || r[cS] == null) continue;
-    const dt = impDate(r[cD]), a = impNum(r[cS]); if (!dt || a == null || !a) continue;
-    const desc = cO >= 0 ? String(r[cO]||"").trim() : "", bc = cK >= 0 ? String(r[cK]||"").trim() : "";
-    // переводы между своими картами из этой же выписки — не траты и не доходы
-    if (/своєї картки|свою картку|своей карты|свою карту/i.test(bc)){ const m = desc.match(/\*(\d{4})/); if (m && cards.has(m[1])) continue; }
-    const base = "imp_" + dt.d + "_" + Math.round(Math.abs(a)*100) + "_" + desc.toLowerCase().replace(/[^a-zа-яіїєґ0-9]/gi,"").slice(0,24);
-    seenK[base] = (seenK[base]||0) + 1; const id = seenK[base] === 1 ? base : base + "_" + seenK[base];
-    if (a < 0){ const c = impCat(bc, desc);
-      out.push({ id, type:"out", amount: Math.ceil(-a - 1e-9), cat: c.cat, need: /Дім та ремонт|Краса/i.test(bc) ? "need" : defNeed(c.cat), note: (desc + (c.transfer ? " · перевод" : c.cash ? " · наличные" : c.own ? " · своя карта" : "")).slice(0,140), date: dt.d, ts: dt.t, src:"privat" }); }
-    else out.push({ id, type:"in", amount: Math.round(a*100)/100, cat: /зарплат|заробітн|заработн/i.test(desc) ? "Зарплата" : "Другое", need:"", note: (desc + (/переказ|перевод|перекази/i.test(bc + " " + desc) ? " · перевод" : "")).slice(0,140), date: dt.d, ts: dt.t, src:"privat" });
-  }
-  return out;
-}
-let reconMissing = [];
-$("reconFile").onchange = async e => {
-  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
-  $("reconOut").innerHTML = `<p class="sthint">Сверяю «${esc(f.name)}»…</p>`;
-  try {
-    const st = await readStatement(f); if (!st.length) throw new Error("в файле нет операций");
-    const ds = st.map(x => x.date).sort(), from = ds[0], to = ds[ds.length-1];
-    const dd = (a, b) => Math.abs(parse(a) - parse(b)) / 86400000;
-    const pool = entries.filter(x => (x.type === "in" || x.type === "out") && x.date >= from && x.date <= to);
-    const used = new Set(); let same = 0; reconMissing = [];
-    st.forEach(r => {
-      let m = pool.find(x => !used.has(x.id) && x.id === r.id);
-      if (!m) m = pool.find(x => !used.has(x.id) && x.type === r.type && Math.abs(x.amount - r.amount) <= 1 && dd(x.date, r.date) <= 1);
-      if (m){ used.add(m.id); same++; } else reconMissing.push(r);
-    });
-    const extra = pool.filter(x => !used.has(x.id) && x.src !== "privat");
-    const sum = (arr, t) => arr.filter(x => x.type === t).reduce((a,x) => a + x.amount, 0);
-    const fd = d => parse(d).getDate() + " " + MS[parse(d).getMonth()];
-    $("reconOut").innerHTML = `<div class="odo"><div><span>Выписка с ${fd(from)} по ${fd(to)}</span><b>${st.length} операций</b><small>совпало с KROFT: ${same} · не хватает: ${reconMissing.length}</small></div></div>`
-      + (reconMissing.length ? `<div class="subhead"><span>Нет в KROFT</span><b>−${money(sum(reconMissing,"out"))}${sum(reconMissing,"in") ? " · +" + money(sum(reconMissing,"in")) : ""}</b></div>`
-        + `<label class="imp-tr"><input type="checkbox" id="rcAll" checked> Выбрать все</label>`
-        + reconMissing.map((r,i) => `<label class="rcrow"><input type="checkbox" data-i="${i}" checked><span><b>${esc(r.note.split(" · ")[0] || r.cat)}</b><small>${fd(r.date)} · ${esc(r.cat)}${/· перевод/.test(r.note) ? " · перевод" : /· наличные/.test(r.note) ? " · наличные" : ""}</small></span><em class="${r.type === "in" ? "g" : "r"}">${r.type === "in" ? "+" : "−"}${money(r.amount)}</em></label>`).join("")
-        + `<button class="btn plus savebtn" id="rcAdd">Добавить выбранные</button>`
-        : `<div class="cl-box ok"><div class="cl-t">Всё сходится</div><p>Все операции из выписки уже есть в KROFT.</p></div>`)
-      + (extra.length ? `<div class="subhead"><span>Есть в KROFT, нет в выписке</span><b>${extra.length}</b></div><p class="sthint">Это могут быть наличные, другая карта или ошибка. Проверь и, если лишнее, удали в «Все записи».</p>`
-        + extra.slice(0,20).map(x => `<div class="rcrow ro"><span><b>${esc((x.note||"").split(" · ")[0] || normCat(x.type,x.cat))}</b><small>${fd(x.date)} · ${esc(normCat(x.type,x.cat))}${x.src === "applepay" ? " · Apple Pay" : ""}</small></span><em class="${x.type === "in" ? "g" : "r"}">${x.type === "in" ? "+" : "−"}${money(x.amount)}</em></div>`).join("") : "");
-    if ($("rcAll")) $("rcAll").onchange = ev => document.querySelectorAll(".rcrow input[data-i]").forEach(c => { c.checked = ev.target.checked; });
-    if ($("rcAdd")) $("rcAdd").onclick = () => {
-      const pick = [...document.querySelectorAll(".rcrow input[data-i]")].filter(c => c.checked).map(c => reconMissing[+c.dataset.i]);
-      if (!pick.length){ toast("Ничего не выбрано"); return; }
-      confirmBox({ title:"Добавить " + pick.length + " операций?", ok:"Добавить",
-        html:`<p>Траты −${money(sum(pick,"out"))}${sum(pick,"in") ? ", доходы +" + money(sum(pick,"in")) : ""}. Операции после точки старта изменят «Свободные».</p>`,
-        onOk:()=>{ const have = new Set(entries.map(x => x.id)); const add = pick.filter(x => !have.has(x.id));
-          entries.push(...applyNeedMem(add)); saveLocal(); if (col) add.forEach(x => col.doc(x.id).set(x).catch(()=>{}));
-          render(); toast("Добавлено: " + add.length); $("reconOut").innerHTML = `<div class="cl-box ok"><div class="cl-t">Готово</div><p>Добавлено ${add.length} операций. Можно загрузить выписку ещё раз — теперь всё должно совпасть.</p></div>`; return true; } });
-    };
-  } catch(err){ $("reconOut").innerHTML = `<div class="err">Не получилось: ${esc(err.message || String(err))}</div>`; }
-};
-$("secRecon").onclick = () => { drawer(false); document.querySelectorAll(".screen").forEach(sc => { if (sc.id !== "reconScreen") sc.hidden = true; }); $("reconScreen").hidden = false; $("reconScreen").scrollTop = 0; };
-$("reconBack").onclick = () => { $("reconScreen").hidden = true; };
+/* пункт меню «Сверка с выпиской» — открывает «Все записи» и сразу выбор файла выписки */
+$("secRecon").onclick = () => { drawer(false); document.querySelectorAll(".screen").forEach(sc => { if (sc.id !== "recScreen") sc.hidden = true; });
+  $("recScreen").hidden = false; $("recScreen").scrollTop = 0; if (typeof drawRecs === "function") drawRecs(); $("svFile").click(); };
 /* пока открыто окно, меню или экран поверх — главный экран под ним не листается */
 let lockY = 0;
 function updateLock(){
   const open = ["sheetBg","startBg","drawerBg","pickBg","cfmBg","calcBg"].some(id => $(id).classList.contains("on"))
-    || !$("jarsScreen").hidden || !$("jarScreen").hidden || !$("shopScreen").hidden || !$("recScreen").hidden || !$("carScreen").hidden || !$("subScreen").hidden || !$("debtScreen").hidden || !$("reconScreen").hidden
+    || !$("jarsScreen").hidden || !$("jarScreen").hidden || !$("shopScreen").hidden || !$("recScreen").hidden || !$("carScreen").hidden || !$("subScreen").hidden || !$("debtScreen").hidden
     || !$("splash").classList.contains("gone");
   const b = document.body;
   if (open && !b.classList.contains("locked")){
@@ -3592,7 +3653,7 @@ function updateLock(){
   }
 }
 const lockObs = new MutationObserver(updateLock);
-["sheetBg","startBg","drawerBg","pickBg","cfmBg","calcBg","jarsScreen","jarScreen","shopScreen","recScreen","carScreen","subScreen","debtScreen","reconScreen"].forEach(id => lockObs.observe($(id), { attributes:true, attributeFilter:["class","hidden"] }));
+["sheetBg","startBg","drawerBg","pickBg","cfmBg","calcBg","jarsScreen","jarScreen","shopScreen","recScreen","carScreen","subScreen","debtScreen"].forEach(id => lockObs.observe($(id), { attributes:true, attributeFilter:["class","hidden"] }));
 
 /* заставка KROFT: при каждом открытии, нажатие — вход в приложение */
 function closeSplash(){ const sp = $("splash"); if (sp.classList.contains("gone")) return; sp.classList.add("gone"); setTimeout(updateLock, 50); }
