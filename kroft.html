@@ -799,6 +799,8 @@ input[type="time"]::-webkit-date-and-time-value,input[type="date"]::-webkit-date
 .dver{margin-top:auto;padding-top:10px;text-align:center;font-size:11px;color:var(--muted);letter-spacing:.06em}
 .dver:empty{display:none}
 .dver:not(:empty) + .dicons{margin-top:8px}
+
+.rtime{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -2582,6 +2584,15 @@ function impPreview(withTr){
 
 // ===== экран «Все записи» =====
 let recF = "all", recLimit = 150;
+// время записи: из выписки Привата — как в выписке (время Киева сохранено «как есть»), остальное — по часам телефона;
+// показываем, только если время совпадает с днём записи (для записей «задним числом» времени нет)
+function recTime(x){
+  if (!x.ts || x.ts < 1e11) return "";
+  const d = new Date(x.ts), priv = x.src === "privat";
+  const Y = priv ? d.getUTCFullYear() : d.getFullYear(), M = priv ? d.getUTCMonth() : d.getMonth(), D = priv ? d.getUTCDate() : d.getDate();
+  if (Y + "-" + pad(M+1) + "-" + pad(D) !== x.date) return "";
+  return pad(priv ? d.getUTCHours() : d.getHours()) + ":" + pad(priv ? d.getUTCMinutes() : d.getMinutes());
+}
 function drawRecs(){
   const src = entries.filter(x => recF === "all" ? true : recF === "in" ? x.type === "in" : x.type === "out");
   const sorted = [...src].sort((a,b)=> b.date.localeCompare(a.date) || (b.ts||0)-(a.ts||0));
@@ -2609,7 +2620,8 @@ function drawRecs(){
       const to = x.type==="save" ? jarName(jarOf(x)) : (x.toName || "накопление");
       title = x.note || "Перенос между накоплениями"; sub = "«" + from + "» → «" + to + "»"; sign = ""; cls = "move";
     }
-    html += `<div class="item"><div class="t"><div>${esc(title)}${x.need==="want"?'<span class="flag">можно без</span>':""}</div><small>${esc(sub)}</small></div>
+    const tm = recTime(x);
+    html += `<div class="item"><div class="t"><div>${esc(title)}${x.need==="want"?'<span class="flag">можно без</span>':""}</div><small>${tm ? '<b class="rtime">' + tm + '</b> · ' : ""}${esc(sub)}</small></div>
       <div class="a ${cls}">${sign}${money(x.amount)}</div>
       <button class="del" data-id="${esc(x.id)}" aria-label="Удалить запись">×</button></div>`;
   });
