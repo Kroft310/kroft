@@ -827,7 +827,6 @@ details.sv-sec summary{cursor:pointer;list-style:none;margin-bottom:6px}details.
 .jgoalbox{margin-top:12px}.jgoalbox .odo{margin-top:0}.jgoalbox .odo small{display:block;margin-top:2px}
 #secDebt{margin-top:8px}
 
-#secRecon{margin-top:8px}
 </style>
 </head>
 <body>
@@ -915,9 +914,6 @@ details.sv-sec summary{cursor:pointer;list-style:none;margin-bottom:6px}details.
     <button class="dsec" id="secNotif">
       <span>Уведомления</span><small id="secNotifVal"></small><i aria-hidden="true">›</i>
     </button>
-    <button class="dsec" id="secRecon">
-      <span>Сверка с выпиской</span><i aria-hidden="true">›</i>
-    </button>
     <button class="dsec" id="secDebt">
       <span>Долги</span><small id="secDebtVal"></small><i aria-hidden="true">›</i>
     </button>
@@ -973,9 +969,6 @@ details.sv-sec summary{cursor:pointer;list-style:none;margin-bottom:6px}details.
       <button class="sv" data-f="out" aria-pressed="false">Траты</button>
     </div>
     <div class="recsearch"><input type="search" id="recQ" placeholder="Поиск: АТБ, эвакуатор, кафе…" autocomplete="off"></div>
-    <label class="btn imp-btn svbtn" for="svFile">Сверить с выпиской</label>
-    <input type="file" id="svFile" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden>
-    <div id="svOut"></div>
     <div class="recsum" id="recSum"></div>
     <section class="recsec"><div id="list"></div></section>
     <button class="jdel recmore" id="recMore" hidden>Показать ещё</button>
@@ -1129,6 +1122,13 @@ details.sv-sec summary{cursor:pointer;list-style:none;margin-bottom:6px}details.
         <label class="btn imp-btn" for="impFile">Загрузить выписку</label>
         <input type="file" id="impFile" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden>
         <div id="impOut"></div>
+      </div>
+      <div class="impbox">
+        <div class="cl-t">Сверка с выпиской</div>
+        <p class="sthint">Загрузи свежую выписку из Приват24 или Монобанка — KROFT сравнит её с записями после точки старта: покажет, чего не хватает, что лишнее и где дубли. Нужное добавишь или уберёшь одной кнопкой.</p>
+        <label class="btn imp-btn svbtn" for="svFile">Сверить с выпиской</label>
+        <input type="file" id="svFile" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden>
+        <div id="svOut"></div>
       </div>
     </div>
   </div>
@@ -3636,9 +3636,6 @@ function drawJarGoalBox(){
 }
 new MutationObserver(() => drawJarGoalBox()).observe($("jarScreen"), { attributes: true, attributeFilter: ["hidden"] });
 
-/* пункт меню «Сверка с выпиской» — открывает «Все записи» и сразу выбор файла выписки */
-$("secRecon").onclick = () => { drawer(false); document.querySelectorAll(".screen").forEach(sc => { if (sc.id !== "recScreen") sc.hidden = true; });
-  $("recScreen").hidden = false; $("recScreen").scrollTop = 0; if (typeof drawRecs === "function") drawRecs(); $("svFile").click(); };
 /* пока открыто окно, меню или экран поверх — главный экран под ним не листается */
 let lockY = 0;
 function updateLock(){
