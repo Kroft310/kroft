@@ -827,6 +827,13 @@ details.sv-sec summary{cursor:pointer;list-style:none;margin-bottom:6px}details.
 .jgoalbox{margin-top:12px}.jgoalbox .odo{margin-top:0}.jgoalbox .odo small{display:block;margin-top:2px}
 #secDebt{margin-top:8px}
 
+
+.jgline{display:block;width:100%;margin:-4px 0 12px;padding:9px 12px;border:0;text-align:left;color:var(--ink);background:rgba(224,172,85,.06);box-shadow:inset 0 0 0 1px rgba(224,172,85,.3);
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%)}
+.jgline span{display:block;font-size:13px;font-weight:600}
+.jgline i{display:block;height:4px;background:rgba(255,255,255,.07);margin:6px 0 4px}.jgline i s{display:block;height:100%;background:var(--acc);text-decoration:none}
+.jgline small{display:block;font-size:11.5px;color:var(--muted)}
+.jgline.empty span{color:var(--acc);font-weight:500}
 </style>
 </head>
 <body>
@@ -1368,7 +1375,10 @@ function render(){
     const k = JL.indexOf(j), pc = st > 0 ? Math.round(Math.max(b,0)/st*100) : 0;
     return `<div class="jar" data-open="${esc(j.id)}" role="button" tabindex="0" style="--edge:${JC[k % JC.length]}"><span class="n">${esc(j.name)}<span class="sum">${money(b)}</span></span>`
       + `<button class="minus" data-jar="${esc(j.id)}" aria-label="Взять из «${esc(j.name)}»"${b<=0?" disabled":""}>−</button>`
-      + `<button class="plus" data-jar="${esc(j.id)}" aria-label="Пополнить «${esc(j.name)}»">+</button></div>`;
+      + `<button class="plus" data-jar="${esc(j.id)}" aria-label="Пополнить «${esc(j.name)}»">+</button></div>`
+      + (() => { const jj = jars.find(z => z.id === j.id) || j, gi = typeof jarGoalInfo === "function" ? jarGoalInfo(jj) : null;
+          return gi ? `<button type="button" class="jgline" data-goal="${esc(j.id)}"><span>🎯 ${money(Math.max(b,0))} из ${money(jj.goal)} · ${Math.round(gi.f*100)}%</span><i><s style="width:${Math.min(gi.f,1)*100}%"></s></i><small>${gi.left > 0 ? "осталось " + money(gi.left) + " · " : ""}${gi.eta}</small></button>`
+            : `<button type="button" class="jgline empty" data-goal="${esc(j.id)}"><span>🎯 Цель не задана — нажми, чтобы задать</span></button>`; })();
   }).join("");
   if (openJar) renderJar();
 
@@ -3636,6 +3646,10 @@ function drawJarGoalBox(){
 }
 new MutationObserver(() => drawJarGoalBox()).observe($("jarScreen"), { attributes: true, attributeFilter: ["hidden"] });
 
+
+/* цель прямо в списке накоплений */
+$("jarList").addEventListener("click", e => { const g = e.target.closest("[data-goal]"); if (!g) return; e.stopPropagation();
+  const id = g.dataset.goal, j = jars.find(z => z.id === id) || { id, name: jarName(id) }; openJarGoal(j); }, true);
 /* пока открыто окно, меню или экран поверх — главный экран под ним не листается */
 let lockY = 0;
 function updateLock(){
