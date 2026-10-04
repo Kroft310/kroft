@@ -834,6 +834,9 @@ details.sv-sec summary{cursor:pointer;list-style:none;margin-bottom:6px}details.
 .jgline i{display:block;height:4px;background:rgba(255,255,255,.07);margin:6px 0 4px}.jgline i s{display:block;height:100%;background:var(--acc);text-decoration:none}
 .jgline small{display:block;font-size:11.5px;color:var(--muted)}
 .jgline.empty span{color:var(--acc);font-weight:500}
+
+.jgoal.set{color:var(--acc);font-weight:600}.jrow[aria-pressed="true"] .jgoal.set{color:#3a2a10}
+.jgoal[data-goal]{cursor:pointer;text-decoration:underline;text-decoration-color:rgba(224,172,85,.4);text-underline-offset:2px}
 </style>
 </head>
 <body>
@@ -1712,7 +1715,7 @@ function openSheet(kind, jar, newJar, quick){
 // каждое накопление — отдельная строка: цвет как на графике, название, сколько лежит
 function jarRow(j, k, on, swipe){
   const gi = typeof jarGoalInfo === "function" ? jarGoalInfo(jars.find(z => z.id === j.id)) : null;
-  const row = `<button type="button" class="jrow" data-id="${esc(j.id)}" aria-pressed="${on}"><i style="background:${JC[k % JC.length]}"></i><span>${esc(j.name)}${gi ? `<em class="jgoal">${Math.round(gi.f*100)}% из ${money(jars.find(z => z.id === j.id).goal)}<s style="width:${Math.min(gi.f,1)*100}%"></s></em>` : ""}</span><b>${money(jarBal(j.id))}</b></button>`;
+  const row = `<button type="button" class="jrow" data-id="${esc(j.id)}" aria-pressed="${on}"><i style="background:${JC[k % JC.length]}"></i><span>${esc(j.name)}${gi ? `<em class="jgoal" data-goal="${esc(j.id)}">🎯 ${Math.round(gi.f*100)}% из ${money(jars.find(z => z.id === j.id).goal)} · изменить<s style="width:${Math.min(gi.f,1)*100}%"></s></em>` : `<em class="jgoal set" data-goal="${esc(j.id)}">🎯 задать цель</em>`}</span><b>${money(jarBal(j.id))}</b></button>`;
   return swipe ? `<div class="jswipe" data-id="${esc(j.id)}"><button type="button" class="jspendbtn" data-spend="${esc(j.id)}">Потрачено</button><button type="button" class="jdelbtn" data-del="${esc(j.id)}">Удалить</button>${row}</div>` : row;
 }
 function drawJarChips(openNew){
@@ -3569,7 +3572,7 @@ function openJarGoal(j){
     html: `<label class="cfm-l">Сколько хочу собрать</label><div class="amount"><input id="jgAmt" inputmode="decimal" value="${j.goal || ""}" placeholder="0"><span>₴</span></div><p class="sthint">0 или пусто — убрать цель.</p>`,
     onOk: () => { const v = Math.round(num($("jgAmt").value)); const k = jars.findIndex(z => z.id === j.id);
       if (k >= 0){ jars[k] = Object.assign({}, jars[k], { goal: v > 0 ? v : 0 }); } else jars.push({ id: j.id, name: j.name, goal: v > 0 ? v : 0 });
-      saveJars(); render(); if (typeof drawJarChips === "function" && !$("sheetBg").classList.contains("on")) {} return true; } });
+      saveJars(); render(); if ($("sheetBg").classList.contains("on") && typeof drawJarChips === "function") drawJarChips(); return true; } });
 }
 
 /* ===== 4. Поиск по записям ===== */
@@ -3649,6 +3652,10 @@ new MutationObserver(() => drawJarGoalBox()).observe($("jarScreen"), { attribute
 
 /* цель прямо в списке накоплений */
 $("jarList").addEventListener("click", e => { const g = e.target.closest("[data-goal]"); if (!g) return; e.stopPropagation();
+  const id = g.dataset.goal, j = jars.find(z => z.id === id) || { id, name: jarName(id) }; openJarGoal(j); }, true);
+
+/* цель в окне «Накопления» (кнопка внизу главного) */
+$("jarChips").addEventListener("click", e => { const g = e.target.closest("[data-goal]"); if (!g) return; e.stopPropagation(); e.preventDefault();
   const id = g.dataset.goal, j = jars.find(z => z.id === id) || { id, name: jarName(id) }; openJarGoal(j); }, true);
 /* пока открыто окно, меню или экран поверх — главный экран под ним не листается */
 let lockY = 0;
