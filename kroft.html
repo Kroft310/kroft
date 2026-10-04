@@ -801,6 +801,19 @@ input[type="time"]::-webkit-date-and-time-value,input[type="date"]::-webkit-date
 .dver:not(:empty) + .dicons{margin-top:8px}
 
 .rtime{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+
+.limbox[hidden],.monbox[hidden]{display:none}
+.lhead{display:flex;align-items:center;justify-content:space-between}.lhead h2{margin:0}
+.lim{margin-top:10px}.lim .cr span{font-size:13px;color:var(--muted)}
+.lbar{height:6px;background:rgba(255,255,255,.07);margin:6px 0 4px}.lbar i{display:block;height:100%;background:var(--in)}
+.lim.soon .lbar i{background:var(--acc)}.lim.over .lbar i{background:var(--out)}
+.lim small{font-size:12px;color:var(--muted)}.lim.over small{color:var(--out)}.lim.soon small{color:var(--acc)}
+.recsearch{margin-top:12px}.recsearch input{width:100%;box-sizing:border-box;padding:12px 14px;font-size:16px;color:var(--ink);background:rgba(5,4,3,.85);border:1px solid var(--line);border-radius:0}
+.jgoal{display:block;font-style:normal;font-size:11px;color:var(--muted);margin-top:3px;position:relative;padding-bottom:5px}
+.jgoal s{position:absolute;left:0;bottom:0;height:2px;background:var(--acc);text-decoration:none}
+.jrow[aria-pressed="true"] .jgoal{color:#3a2a10}.jrow[aria-pressed="true"] .jgoal s{background:#3a2a10}
+.jgoalbox{margin-top:12px}.jgoalbox .odo{margin-top:0}.jgoalbox .odo small{display:block;margin-top:2px}
+#secDebt{margin-top:8px}
 </style>
 </head>
 <body>
@@ -837,6 +850,8 @@ input[type="time"]::-webkit-date-and-time-value,input[type="date"]::-webkit-date
 
 
   <section class="planbox" id="planBox" hidden></section>
+  <section class="limbox" id="limBox"></section>
+  <section class="monbox" id="monBox"></section>
   <div class="tips" id="tips"></div>
 
   <section>
@@ -886,6 +901,9 @@ input[type="time"]::-webkit-date-and-time-value,input[type="date"]::-webkit-date
     <button class="dsec" id="secNotif">
       <span>Уведомления</span><small id="secNotifVal"></small><i aria-hidden="true">›</i>
     </button>
+    <button class="dsec" id="secDebt">
+      <span>Долги</span><small id="secDebtVal"></small><i aria-hidden="true">›</i>
+    </button>
     <button class="dsec" id="secShop">
       <span>Магазин</span><small id="secShopVal"></small><i aria-hidden="true">›</i>
     </button>
@@ -895,6 +913,7 @@ input[type="time"]::-webkit-date-and-time-value,input[type="date"]::-webkit-date
     <div class="dver" id="dVer"></div>
     <div class="dicons">
       <button type="button" class="dicon" id="icNotif" aria-label="Уведомления"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/><path d="M12 3v2"/></svg><small id="icNotifVal"></small></button>
+      <button type="button" class="dicon" id="icBackup" aria-label="Резервная копия"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11"/><path d="M8 10l4 4 4-4"/><path d="M5 17v3h14v-3"/></svg></button>
       <button type="button" class="dicon" id="icStart" aria-label="Точка старта"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"/><path d="M5 4h11l-2 3.5L16 11H5"/><circle cx="5" cy="21" r=".6" fill="currentColor"/></svg></button>
     </div>
   </aside>
@@ -936,9 +955,20 @@ input[type="time"]::-webkit-date-and-time-value,input[type="date"]::-webkit-date
       <button class="sv" data-f="in" aria-pressed="false">Зачисления</button>
       <button class="sv" data-f="out" aria-pressed="false">Траты</button>
     </div>
+    <div class="recsearch"><input type="search" id="recQ" placeholder="Поиск: АТБ, эвакуатор, кафе…" autocomplete="off"></div>
     <div class="recsum" id="recSum"></div>
     <section class="recsec"><div id="list"></div></section>
     <button class="jdel recmore" id="recMore" hidden>Показать ещё</button>
+  </div>
+</div>
+
+<div class="screen" id="debtScreen" hidden>
+  <div class="wrap">
+    <div class="top">
+      <button class="back" id="debtBack" aria-label="Назад">‹</button>
+      <h1>Долги</h1>
+    </div>
+    <div id="debtBody"></div>
   </div>
 </div>
 
@@ -978,6 +1008,7 @@ input[type="time"]::-webkit-date-and-time-value,input[type="date"]::-webkit-date
       <button class="back" id="jarBack" aria-label="Назад">‹</button>
       <h1 id="jName"></h1>
     </div>
+    <div class="jgoalbox" id="jGoalBox"></div>
     <div class="jcard">
       <small>Сейчас в накоплении</small>
       <div class="num" id="jBal">0 ₴</div>
@@ -1295,6 +1326,10 @@ function render(){
   drawMonth(inc, out, put, took, left);
   if (typeof drawPlan === "function") drawPlan();
   if (typeof drawIncAsk === "function") drawIncAsk();
+  if (typeof drawLimits === "function") drawLimits();
+  if (typeof drawJarGoalBox === "function") drawJarGoalBox();
+  if (typeof drawMonths === "function") drawMonths();
+  if (typeof drawDebts === "function") drawDebts();
   if (typeof drawCar === "function" && cars) drawCar();
   if (typeof drawSubs === "function" && subs) drawSubs();
   if (start.date){ const d = parse(start.date); $("secStartVal").textContent = d.getDate() + " " + MS[d.getMonth()]; }
@@ -1646,7 +1681,8 @@ function openSheet(kind, jar, newJar, quick){
 }
 // каждое накопление — отдельная строка: цвет как на графике, название, сколько лежит
 function jarRow(j, k, on, swipe){
-  const row = `<button type="button" class="jrow" data-id="${esc(j.id)}" aria-pressed="${on}"><i style="background:${JC[k % JC.length]}"></i><span>${esc(j.name)}</span><b>${money(jarBal(j.id))}</b></button>`;
+  const gi = typeof jarGoalInfo === "function" ? jarGoalInfo(jars.find(z => z.id === j.id)) : null;
+  const row = `<button type="button" class="jrow" data-id="${esc(j.id)}" aria-pressed="${on}"><i style="background:${JC[k % JC.length]}"></i><span>${esc(j.name)}${gi ? `<em class="jgoal">${Math.round(gi.f*100)}% из ${money(jars.find(z => z.id === j.id).goal)}<s style="width:${Math.min(gi.f,1)*100}%"></s></em>` : ""}</span><b>${money(jarBal(j.id))}</b></button>`;
   return swipe ? `<div class="jswipe" data-id="${esc(j.id)}"><button type="button" class="jspendbtn" data-spend="${esc(j.id)}">Потрачено</button><button type="button" class="jdelbtn" data-del="${esc(j.id)}">Удалить</button>${row}</div>` : row;
 }
 function drawJarChips(openNew){
@@ -1950,6 +1986,8 @@ let col = null;
       entries = entries.filter(x => !hidden.has(x.id));
       const eid = s.docs.find(d => d.id === "_expinc");
       if (eid && eid.exists){ try { const e2 = JSON.parse((eid.data()||{}).json || "null"); if (e2 && e2.length){ expInc = e2; KS.setItem(LSEI, JSON.stringify(expInc)); } } catch(e){} }
+      const lmd = s.docs.find(d => d.id === "_limits"); if (lmd && lmd.exists){ try { limits = JSON.parse((lmd.data()||{}).json || "{}") || {}; } catch(e){} }
+      const dbd = s.docs.find(d => d.id === "_debts"); if (dbd && dbd.exists){ try { debts = JSON.parse((dbd.data()||{}).json || "[]") || []; } catch(e){} }
       const ntd = s.docs.find(d => d.id === "_notif");
       if (ntd && ntd.exists){ try { const n2 = JSON.parse((ntd.data()||{}).json || "null"); if (n2){ notif = Object.assign(notif, n2); KS.setItem(LSNT, JSON.stringify(notif)); $("secNotifVal").textContent = notif.time; } } catch(e){} }
       const nmd = s.docs.find(d => d.id === "_needmem");
@@ -2553,6 +2591,9 @@ $("impFile").onchange = async e => {
         impRows.push({ id:key, type:"in", amount:Math.round(a*100)/100, cat:/зарплат|заробітн|заработн/i.test(desc) ? "Зарплата" : "Другое", need:"", note:desc.slice(0,120), date:dt.d, ts:dt.t, src:"privat", transfer:/переказ|перевод|перекази/i.test(bc+" "+desc) }); }
     }
     const have = new Set(entries.map(x => x.id)); impRows = impRows.filter(x => !have.has(x.id));
+    // покупки, уже записанные через Apple Pay (тот же день и сумма ±1 ₴), не дублируем
+    const ap = entries.filter(y => y.src === "applepay");
+    impRows = impRows.filter(x => !(x.type === "out" && ap.some(y => y.date === x.date && Math.abs(y.amount - x.amount) <= 1)));
     impPreview();
   } catch(err){ $("impOut").innerHTML = `<div class="err">Не получилось прочитать файл: ${esc(err.message || String(err))}</div>`; }
 };
@@ -2594,7 +2635,8 @@ function recTime(x){
   return pad(priv ? d.getUTCHours() : d.getHours()) + ":" + pad(priv ? d.getUTCMinutes() : d.getMinutes());
 }
 function drawRecs(){
-  const src = entries.filter(x => recF === "all" ? true : recF === "in" ? x.type === "in" : x.type === "out");
+  const src = entries.filter(x => (recF === "all" ? true : recF === "in" ? x.type === "in" : x.type === "out")
+    && (!recQ || ((x.note || "") + " " + normCat(x.type, x.cat)).toLowerCase().includes(recQ)));
   const sorted = [...src].sort((a,b)=> b.date.localeCompare(a.date) || (b.ts||0)-(a.ts||0));
   const sI = src.filter(x => x.type==="in").reduce((a,x)=>a+x.amount,0), sO = src.filter(x => x.type==="out").reduce((a,x)=>a+x.amount,0);
   $("recSum").innerHTML = (recF !== "out" ? `<span>Зачислений <b style="color:var(--in)">${money(sI)}</b></span>` : "") + (recF !== "in" ? `<span>Трат <b style="color:var(--out)">${money(sO)}</b></span>` : "") + `<span>${src.length} шт.</span>`;
@@ -2734,7 +2776,14 @@ function drawCar(){
     const byM = {}; L.forEach(x => { const k = x.date.slice(0,7); byM[k] = byM[k] || { f:0, r:0 }; byM[k][normCat("out",x.cat)==="Топливо"?"f":"r"] += x.amount; });
     const ms = Object.keys(byM).sort().reverse().slice(0,12), y = String(new Date().getFullYear());
     const yf = L.filter(x => x.date.startsWith(y) && normCat("out",x.cat)==="Топливо").reduce((a,x)=>a+x.amount,0), yr = L.filter(x => x.date.startsWith(y) && normCat("out",x.cat)!=="Топливо").reduce((a,x)=>a+x.amount,0);
-    $("carBody").innerHTML = pick + (cars.length > 1 && expCar !== "all" ? `<p class="sthint">Здесь траты, где при вводе выбрана эта машина. Старые записи из выписки — во вкладке «Все».</p>` : "") + `<div class="odo"><div><span>За ${y} год на ${expCar === "all" || cars.length < 2 ? "машины" : "«" + esc((cars.find(c=>c.id===expCar)||C()).name) + "»"}</span><b>${money(yf+yr)}</b><small>топливо ${money(yf)} · ремонт и обслуживание ${money(yr)}</small></div></div>`
+    // 8. сколько стоит 1 км: траты на машину с начала учёта пробега / пройденные км
+    const cc = expCar === "all" && cars.length > 1 ? null : (cars.find(c => c.id === expCar) || C());
+    let perKm = "";
+    if (cc && cc.baseKm != null && cc.odo > cc.baseKm && cc.baseDate){
+      const kmDone = cc.odo - cc.baseKm, spent = entries.filter(x => x.type === "out" && ["Ремонт машины","Топливо"].includes(normCat("out", x.cat)) && x.date >= cc.baseDate && (cars.length < 2 || x.car === cc.id)).reduce((a2,x) => a2 + x.amount, 0);
+      if (spent > 0) perKm = `<div class="odo"><div><span>1 км на «${esc(cc.name)}» обходится</span><b>${(spent / kmDone).toFixed(2).replace(".", ",")} ₴</b><small>${money(spent)} на топливо и ремонт за ${km(kmDone)} с ${parse(cc.baseDate).getDate()} ${MG[parse(cc.baseDate).getMonth()]}</small></div></div>`;
+    }
+    $("carBody").innerHTML = pick + perKm + (cars.length > 1 && expCar !== "all" ? `<p class="sthint">Здесь траты, где при вводе выбрана эта машина. Старые записи из выписки — во вкладке «Все».</p>` : "") + `<div class="odo"><div><span>За ${y} год на ${expCar === "all" || cars.length < 2 ? "машины" : "«" + esc((cars.find(c=>c.id===expCar)||C()).name) + "»"}</span><b>${money(yf+yr)}</b><small>топливо ${money(yf)} · ремонт и обслуживание ${money(yr)}</small></div></div>`
       + `<div class="cl-plan"><div class="cl-h"><span>Месяц</span><b>топливо · ремонт</b></div>` + ms.map(k => { const d = parse(k+"-01");
           return `<div class="cl-r"><span>${MN[d.getMonth()]} ${k.slice(0,4)}</span><b><i style="color:var(--acc);font-style:normal">${money(byM[k].f)}</i> · ${money(byM[k].r)}</b></div>`; }).join("") + `</div>`
       + `<div class="cl-plan"><div class="cl-t">Последние траты</div>` + L.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,40).map(x => `<div class="cl-r"><span>${parse(x.date).getDate()} ${MS[parse(x.date).getMonth()]} · ${esc(x.note || x.cat)}</span><b>${money(x.amount)}</b></div>`).join("") + `</div>`;
@@ -3152,25 +3201,44 @@ function drawPlan(){
   if ($("planSave")) $("planSave").onclick = () => { openSheet("sav"); setTimeout(() => { $("amt").value = ""; $("amt").focus(); }, 30); };  // сумму вводишь сам, по факту
 }
 
-/* нажатие на расход в «Записях» — «нужный / можно без», с запоминанием для всего магазина */
+/* нажатие на запись в «Записях» — редактирование: сумма, категория, дата, описание, «нужный / можно без» */
 $("list").addEventListener("click", e => {
   if (e.target.closest(".del")) return;
   const it = e.target.closest(".item"); if (!it) return;
   const id = it.querySelector(".del") && it.querySelector(".del").dataset.id, x = entries.find(y => y.id === id);
-  if (!x || x.type !== "out") return;
-  const k = shopKey(x), same = k ? entries.filter(y => y.type === "out" && shopKey(y) === k).length : 1;
-  let nd = x.need === "want" ? "want" : "need";
-  confirmBox({ title: x.note ? x.note.split(/ · /)[0] : normCat("out", x.cat), ok:"Сохранить",
-    html:`<p>${money(x.amount)} · ${esc(normCat("out", x.cat))} · ${parse(x.date).getDate()} ${MG[parse(x.date).getMonth()]}</p>
-      <div class="curseg" id="ndSeg"><button type="button" data-n="need" aria-pressed="${nd==="need"}">Нужный</button><button type="button" data-n="want" aria-pressed="${nd==="want"}">Можно было без него</button></div>
-      ${same > 1 ? `<label class="imp-tr"><input type="checkbox" id="ndAll" checked> Для всех покупок в «${esc(x.note.split(/ · |,/)[0])}» (${same} шт.) и для будущих</label>` : ""}`,
-    onOpen:()=>{ $("ndSeg").onclick = ev => { const b = ev.target.closest("button"); if (!b) return; nd = b.dataset.n; $("ndSeg").querySelectorAll("button").forEach(z => z.setAttribute("aria-pressed", z === b)); }; },
-    onOk:()=>{
-      if ($("ndAll") && $("ndAll").checked && k){ needMem[k] = nd; try { KS.setItem(LSNM, JSON.stringify(needMem)); } catch(err){} if (col) col.doc("_needmem").set({ kind:"needmem", json: JSON.stringify(needMem) }).catch(()=>{}); entries = applyNeedMem(entries); }
-      else { const i = entries.indexOf(x); entries[i] = Object.assign({}, x, { need: nd }); if (col && x.src !== "privat") col.doc(x.id).set(entries[i]).catch(()=>{});
-        if (x.src === "privat" && k){ /* импорт хранится пакетом — запоминаем как правило для этой покупки */ needMem["id:" + x.id] = nd; try { KS.setItem(LSNM, JSON.stringify(needMem)); } catch(err){} if (col) col.doc("_needmem").set({ kind:"needmem", json: JSON.stringify(needMem) }).catch(()=>{}); } }
-      saveLocal(); render(); return true; } });
+  if (!x) return;
+  if (x.type !== "out" && x.type !== "in"){ toast("Переносы и накопления меняются через «Накопления»"); return; }
+  openEdit(x);
 });
+function openEdit(x){
+  const isOut = x.type === "out", cats = CATS[x.type] || [], cur = normCat(x.type, x.cat);
+  const k = shopKey(x), same = isOut && k ? entries.filter(y => y.type === "out" && shopKey(y) === k).length : 0;
+  let cat = cur, nd = x.need === "want" ? "want" : "need";
+  confirmBox({ title: "Изменить запись", ok: "Сохранить",
+    html: `<label class="cfm-l">Сумма</label><div class="amount"><input id="edAmt" inputmode="decimal" value="${x.amount}"><span>₴</span></div>
+      <label class="cfm-l">Описание</label><input class="cfm-in" id="edNote" value="${esc(x.note || "")}" placeholder="${esc(cur)}">
+      <label class="cfm-l">Категория</label><div class="chips spcats" id="edCat">${cats.map(c => `<button type="button" aria-pressed="${c===cur}">${esc(c)}</button>`).join("")}</div>
+      <label class="cfm-l">Дата</label><input class="cfm-in" id="edDate" type="date" value="${x.date}">
+      ${isOut ? `<div class="curseg" id="edNeed"><button type="button" data-n="need" aria-pressed="${nd==="need"}">Нужный</button><button type="button" data-n="want" aria-pressed="${nd==="want"}">Можно было без него</button></div>
+        ${same > 1 ? `<label class="imp-tr"><input type="checkbox" id="edAll"> «Нужный / можно без» — для всех покупок в «${esc((x.note||"").split(/ · |,/)[0])}» (${same} шт.) и будущих</label>` : ""}` : ""}`,
+    onOpen: () => {
+      $("edCat").onclick = ev => { const b = ev.target.closest("button"); if (!b) return; cat = b.textContent; $("edCat").querySelectorAll("button").forEach(z => z.setAttribute("aria-pressed", z === b)); };
+      { const sel = $("edCat").querySelector('[aria-pressed="true"]'); if (sel) $("edCat").scrollLeft = sel.offsetLeft - 20; }
+      if ($("edNeed")) $("edNeed").onclick = ev => { const b = ev.target.closest("button"); if (!b) return; nd = b.dataset.n; $("edNeed").querySelectorAll("button").forEach(z => z.setAttribute("aria-pressed", z === b)); };
+    },
+    onOk: () => {
+      const a = num($("edAmt").value); if (!(a > 0)){ $("cfmErr").textContent = "Впиши сумму."; return false; }
+      const d = $("edDate").value; if (!d){ $("cfmErr").textContent = "Выбери дату."; return false; }
+      const i = entries.indexOf(x); if (i < 0) return true;
+      const y = Object.assign({}, x, { amount: isOut ? Math.ceil(a - 1e-9) : Math.round(a*100)/100, cat, date: d, note: $("edNote").value.trim().slice(0,140) });
+      if (isOut) y.need = nd;
+      if (d !== x.date) y.ts = parse(d).getTime() + 12*3600000;
+      entries[i] = y;
+      if (isOut && $("edAll") && $("edAll").checked && k){ needMem[k] = nd; try { KS.setItem(LSNM, JSON.stringify(needMem)); } catch(err){} if (col) col.doc("_needmem").set({ kind:"needmem", json: JSON.stringify(needMem) }).catch(()=>{}); entries = applyNeedMem(entries); }
+      else if (isOut && x.need !== nd && x.src === "privat"){ needMem["id:" + x.id] = nd; try { KS.setItem(LSNM, JSON.stringify(needMem)); } catch(err){} }
+      saveLocal(); if (col && x.src !== "privat") col.doc(y.id).set(y).catch(()=>{});
+      render(); toast("Сохранено"); return true; } });
+}
 
 /* ===== Доходы по датам: в окне «с … по …» спрашиваем, пришло ли, и точную сумму ===== */
 function drawIncAsk(){
@@ -3282,11 +3350,147 @@ setInterval(() => { $("icNotifVal").textContent = $("secNotifVal").textContent; 
 
 /* номер версии приложения (на телефоне) — видно внизу меню, удобно проверять обновления */
 if (window.KROFT_VERSION) $("dVer").textContent = "KROFT · версия " + window.KROFT_VERSION;
+
+/* ===== 2. Лимиты по категориям ===== */
+const LSLIM = "groshi_limits";
+let limits = {}; try { limits = JSON.parse(KS.getItem(LSLIM) || "{}") || {}; } catch(e){}
+function saveLimits(){ try { KS.setItem(LSLIM, JSON.stringify(limits)); } catch(e){} if (col) col.doc("_limits").set({ kind:"limits", json: JSON.stringify(limits) }).catch(()=>{}); }
+function monthSpentByCat(y, m){ const pre = y + "-" + pad(m+1), r = {};
+  entries.forEach(x => { if (x.type === "out" && x.date && x.date.slice(0,7) === pre){ const c = normCat("out", x.cat); r[c] = (r[c]||0) + x.amount; } }); return r; }
+function drawLimits(){
+  const box = $("limBox"); if (!box) return;
+  if (!(P.mode === "month" && P.off === 0)){ box.hidden = true; return; } box.hidden = false;
+  const now = new Date(), sp = monthSpentByCat(now.getFullYear(), now.getMonth());
+  const ls = Object.entries(limits).filter(([,v]) => v > 0);
+  box.innerHTML = `<div class="lhead"><h2>Лимиты на ${MN[now.getMonth()].toLowerCase()}</h2><button type="button" class="cmedit" id="limEdit">✎ Настроить</button></div>`
+    + (ls.length ? ls.map(([c,v]) => { const s0 = sp[c] || 0, f = s0 / v, st = f >= 1 ? "over" : f >= 0.8 ? "soon" : "ok";
+        return `<div class="lim ${st}"><div class="cr"><b>${esc(c)}</b><span>${money(s0)} из ${money(v)}</span></div><div class="lbar"><i style="width:${Math.min(f,1)*100}%"></i></div>
+          <small>${st === "over" ? "превышено на " + money(s0 - v) : "осталось " + money(v - s0) + (st === "soon" ? " — время притормозить" : "")}</small></div>`; }).join("")
+      : `<p class="sthint">Поставь лимит, например «Кафе — 3 000 ₴ в месяц», — здесь будет видно, сколько осталось.</p>`);
+  $("limEdit").onclick = () => confirmBox({ title:"Лимиты в месяц", ok:"Сохранить",
+    html: `<p>Пусто — без лимита.</p>` + CATS.out.map(c => `<div class="strow"><span>${esc(c)}</span><input inputmode="numeric" data-lim="${esc(c)}" value="${limits[c] || ""}" placeholder="—"></div>`).join(""),
+    onOk: () => { document.querySelectorAll("[data-lim]").forEach(inp => { const v = Math.round(num(inp.value)); if (v > 0) limits[inp.dataset.lim] = v; else delete limits[inp.dataset.lim]; }); saveLimits(); drawLimits(); return true; } });
+}
+
+/* ===== 6. Сравнение месяцев ===== */
+function drawMonths(){
+  const box = $("monBox"); if (!box) return;
+  const now = new Date(), months = [];
+  for (let k = 11; k >= 0; k--){ const d = new Date(now.getFullYear(), now.getMonth() - k, 1), pre = d.getFullYear() + "-" + pad(d.getMonth()+1);
+    let inc = 0, out = 0; entries.forEach(x => { if (x.date && x.date.slice(0,7) === pre){ if (x.type === "in") inc += x.amount; else if (x.type === "out") out += x.amount; } });
+    months.push({ d, inc, out }); }
+  const used = months.filter(m => m.inc || m.out); if (!used.length){ box.hidden = true; return; } box.hidden = false;
+  const W = 340, H = 150, top = Math.max(...months.map(m => Math.max(m.inc, m.out)), 1), bw = (W - 20) / 12;
+  const Y = v => H - 22 - v / top * (H - 34);
+  let bars = "";
+  months.forEach((m, i) => { const x = 10 + i * bw;
+    bars += `<rect x="${(x + bw*0.12).toFixed(1)}" y="${Y(m.inc).toFixed(1)}" width="${(bw*0.36).toFixed(1)}" height="${(H - 22 - Y(m.inc)).toFixed(1)}" rx="2" fill="#45e39a" opacity=".85"/>`
+      + `<rect x="${(x + bw*0.52).toFixed(1)}" y="${Y(m.out).toFixed(1)}" width="${(bw*0.36).toFixed(1)}" height="${(H - 22 - Y(m.out)).toFixed(1)}" rx="2" fill="#ff5c6c" opacity=".85"/>`
+      + `<text x="${(x + bw/2).toFixed(1)}" y="${H - 6}" text-anchor="middle" font-size="9" fill="var(--muted)">${MS[m.d.getMonth()]}</text>`; });
+  const best = used.slice().sort((a,b) => (b.inc - b.out) - (a.inc - a.out))[0], worst = used.slice().sort((a,b) => (a.inc - a.out) - (b.inc - b.out))[0];
+  box.innerHTML = `<h2>По месяцам</h2><div class="plg"><span><i style="background:#45e39a"></i>пришло</span><span><i style="background:#ff5c6c"></i>потрачено</span></div>
+    <svg viewBox="0 0 ${W} ${H}" class="plansvg">${bars}</svg>
+    <div class="prow"><span>Лучший месяц</span><b class="g">${MN[best.d.getMonth()]} · ${(best.inc - best.out >= 0 ? "+" : "−") + money(Math.abs(best.inc - best.out))}</b></div>
+    <div class="prow"><span>Самый затратный</span><b class="r">${MN[worst.d.getMonth()]} · ${(worst.inc - worst.out >= 0 ? "+" : "−") + money(Math.abs(worst.inc - worst.out))}</b></div>`;
+}
+
+/* ===== 3. Цель для накопления ===== */
+function jarGoalInfo(j){
+  if (!j || !(j.goal > 0)) return null;
+  const bal = Math.max(jarBal(j.id), 0), f = bal / j.goal, since = new Date(); since.setDate(since.getDate() - 90); const sIso = iso(since);
+  let net = 0; entries.forEach(x => { if (jarOf(x) === j.id && x.date >= sIso){ if (x.type === "save") net += x.amount; else if (x.type === "take") net -= x.amount; } });
+  const perMonth = net / 3, left = Math.max(j.goal - bal, 0); let eta = "";
+  if (left <= 0) eta = "цель достигнута 🎉";
+  else if (perMonth > 0){ const d = new Date(); d.setMonth(d.getMonth() + Math.ceil(left / perMonth)); eta = "при текущем темпе — к " + MN_G[d.getMonth()] + (d.getFullYear() !== new Date().getFullYear() ? " " + d.getFullYear() : ""); }
+  else eta = "за 3 месяца не пополнялось";
+  return { bal, f, left, eta };
+}
+function openJarGoal(j){
+  confirmBox({ title:"Цель: «" + j.name + "»", ok:"Сохранить",
+    html: `<label class="cfm-l">Сколько хочу собрать</label><div class="amount"><input id="jgAmt" inputmode="decimal" value="${j.goal || ""}" placeholder="0"><span>₴</span></div><p class="sthint">0 или пусто — убрать цель.</p>`,
+    onOk: () => { const v = Math.round(num($("jgAmt").value)); const k = jars.findIndex(z => z.id === j.id);
+      if (k >= 0){ jars[k] = Object.assign({}, jars[k], { goal: v > 0 ? v : 0 }); } else jars.push({ id: j.id, name: j.name, goal: v > 0 ? v : 0 });
+      saveJars(); render(); if (typeof drawJarChips === "function" && !$("sheetBg").classList.contains("on")) {} return true; } });
+}
+
+/* ===== 4. Поиск по записям ===== */
+let recQ = "";
+$("recQ").addEventListener("input", () => { recQ = $("recQ").value.trim().toLowerCase(); recLimit = 150; drawRecs(); });
+
+/* ===== 7. Долги ===== */
+const LSDEBT = "groshi_debts";
+let debts = []; try { debts = JSON.parse(KS.getItem(LSDEBT) || "[]") || []; } catch(e){}
+function saveDebts(){ try { KS.setItem(LSDEBT, JSON.stringify(debts)); } catch(e){} if (col) col.doc("_debts").set({ kind:"debts", json: JSON.stringify(debts) }).catch(()=>{}); drawDebts(); }
+function drawDebts(){
+  const open = debts.filter(d => !d.closed), toMe = open.filter(d => d.dir === "me").reduce((a,d) => a + d.amount, 0), fromMe = open.filter(d => d.dir === "i").reduce((a,d) => a + d.amount, 0);
+  $("secDebtVal").textContent = open.length ? (toMe ? "мне " + money(toMe) : "") + (toMe && fromMe ? " · " : "") + (fromMe ? "я " + money(fromMe) : "") : "";
+  if ($("debtScreen").hidden) return;
+  const t = new Date(); t.setHours(0,0,0,0);
+  const row = d => { const due = d.due ? parse(d.due) : null, late = due && due < t && !d.closed;
+    return `<div class="citem ${d.closed ? "ok" : late ? "over" : "soon"}" data-id="${d.id}"><div class="cr"><b>${esc(d.name)}</b><b class="${d.dir === "me" ? "g" : "r"}" style="color:${d.dir === "me" ? "var(--in)" : "var(--out)"}">${money(d.amount)}</b></div>
+      <div class="cnote">${d.dir === "me" ? "мне должны" : "я должен"}${d.note ? " · " + esc(d.note) : ""}${d.date ? " · с " + parse(d.date).getDate() + " " + MS[parse(d.date).getMonth()] : ""}${due ? " · вернуть до " + due.getDate() + " " + MG[due.getMonth()] + (late ? " — просрочено" : "") : ""}${d.closed ? " · ✓ закрыт" : ""}</div>
+      ${d.closed ? "" : `<div class="cr sm"><span></span><span class="cbtns"><button type="button" class="dret">${d.dir === "me" ? "Вернули" : "Вернул"}</button></span></div>`}</div>`; };
+  $("debtBody").innerHTML = `<div class="odo"><div><span>Мне должны</span><b style="color:var(--in)">${money(toMe)}</b></div><div><span>Я должен</span><b style="color:var(--out)">${money(fromMe)}</b></div></div>
+    <div class="qadd two"><button type="button" id="debtAddMe">+ Дал в долг</button><button type="button" id="debtAddI">+ Взял в долг</button></div>`
+    + (open.length ? open.map(row).join("") : `<p class="sthint">Долгов нет.</p>`)
+    + (debts.some(d => d.closed) ? `<div class="subhead"><span>Закрытые</span><b></b></div>` + debts.filter(d => d.closed).slice(-10).reverse().map(row).join("") : "");
+}
+function openDebt(dir){
+  confirmBox({ title: dir === "me" ? "Дал в долг" : "Взял в долг", ok:"Сохранить",
+    html: `<label class="cfm-l">${dir === "me" ? "Кому" : "У кого"}</label><input class="cfm-in" id="dbName" placeholder="Имя">
+      <label class="cfm-l">Сумма</label><div class="amount"><input id="dbAmt" inputmode="decimal" placeholder="0"><span>₴</span></div>
+      <label class="cfm-l">Вернуть до (необязательно)</label><input class="cfm-in" id="dbDue" type="date">
+      <label class="cfm-l">Комментарий</label><input class="cfm-in" id="dbNote" placeholder="необязательно">
+      <label class="imp-tr"><input type="checkbox" id="dbRec" checked> ${dir === "me" ? "Записать расходом — деньги ушли из «Свободных»" : "Записать доходом — деньги пришли в «Свободные»"}</label>`,
+    onOk: () => { const n = $("dbName").value.trim(), a = num($("dbAmt").value);
+      if (!n){ $("cfmErr").textContent = "Впиши имя."; return false; } if (!(a > 0)){ $("cfmErr").textContent = "Впиши сумму."; return false; }
+      const d = { id: "d" + Date.now().toString(36), name: n, amount: Math.round(a), dir, due: $("dbDue").value || "", note: $("dbNote").value.trim(), date: iso(new Date()), rec: $("dbRec").checked, closed: false };
+      if (d.rec){ const x = { id:"e"+Date.now()+Math.random().toString(36).slice(2,6), type: dir === "me" ? "out" : "in", amount: d.amount, cat: "Другое", need: "need", note: (dir === "me" ? "Дал в долг: " : "Взял в долг: ") + n, debt: d.id, jar:"", jarName:"", date: iso(new Date()), ts: Date.now() };
+        entries.push(x); saveLocal(); if (col) col.doc(x.id).set(x).catch(()=>{}); render(); }
+      debts.push(d); saveDebts(); return true; } });
+}
+$("secDebt").onclick = () => { drawer(false); document.querySelectorAll(".screen").forEach(sc => { if (sc.id !== "debtScreen") sc.hidden = true; }); $("debtScreen").hidden = false; $("debtScreen").scrollTop = 0; drawDebts(); };
+$("debtBack").onclick = () => { $("debtScreen").hidden = true; };
+$("debtBody").addEventListener("click", e => {
+  if (e.target.closest("#debtAddMe")) return openDebt("me");
+  if (e.target.closest("#debtAddI")) return openDebt("i");
+  const row = e.target.closest(".citem"); if (!row) return; const d = debts.find(z => z.id === row.dataset.id); if (!d) return;
+  if (e.target.closest(".dret")) confirmBox({ title: (d.dir === "me" ? "Вернули: " : "Вернул: ") + d.name, ok:"Да",
+    html: `<label class="cfm-l">Сумма</label><div class="amount"><input id="drAmt" inputmode="decimal" value="${d.amount}"><span>₴</span></div>
+      ${d.rec ? `<p class="sthint">${d.dir === "me" ? "Запишу доходом — деньги вернутся в «Свободные»." : "Запишу расходом — деньги уйдут из «Свободных»."}</p>` : ""}<p class="sthint">Если вернули часть — впиши сколько, остаток останется в долгах.</p>`,
+    onOk: () => { const a = Math.round(num($("drAmt").value)); if (!(a > 0)){ $("cfmErr").textContent = "Впиши сумму."; return false; }
+      if (d.rec){ const x = { id:"e"+Date.now()+Math.random().toString(36).slice(2,6), type: d.dir === "me" ? "in" : "out", amount: a, cat: "Другое", need: "need", note: (d.dir === "me" ? "Вернули долг: " : "Вернул долг: ") + d.name, debt: d.id, jar:"", jarName:"", date: iso(new Date()), ts: Date.now() };
+        entries.push(x); saveLocal(); if (col) col.doc(x.id).set(x).catch(()=>{}); render(); }
+      d.amount = Math.max(d.amount - a, 0); if (d.amount === 0){ d.closed = true; d.closedOn = iso(new Date()); } saveDebts(); return true; } });
+});
+swipeDelete($("debtBody"), ".citem", r => { const d = debts.find(z => z.id === r.dataset.id); if (!d) return;
+  confirmBox({ title:"Удалить долг «" + d.name + "»?", ok:"Удалить", danger:true, html:`<p>Записи о деньгах, если были, останутся в истории.</p>`,
+    onOk: () => { debts = debts.filter(z => z !== d); saveDebts(); return true; } }); });
+
+/* ===== 9. Резервная копия ===== */
+$("icBackup").onclick = () => { drawer(false);
+  const native = !!window.KROFT_NATIVE;
+  confirmBox({ title:"Резервная копия", ok: native ? "Сохранить копию сейчас" : "Понятно",
+    html: native ? `<p>Копии всех данных сохраняются сами каждый день — 10 последних, в <b>Файлы → iCloud Drive → Scriptable → KROFT</b> (backup-дата.json).</p>
+      <p><b>Как восстановить:</b> скопируй нужный файл backup-….json в ту же папку KROFT и переименуй его в <b>restore.json</b>. При следующем открытии KROFT загрузит данные из него.</p>`
+      : `<p>Резервные копии делает приложение на телефоне (Scriptable): каждый день, в iCloud Drive → Scriptable → KROFT.</p>`,
+    onOk: () => { if (native){ try { KS.setItem("groshi_backup_req", String(Date.now())); } catch(e){} toast("Копия сохранена в iCloud"); } return true; } });
+};
+
+/* цель на странице накопления — обновляется вместе с ней */
+function drawJarGoalBox(){
+  const box = $("jGoalBox"); if (!box || $("jarScreen").hidden || !openJar) return;
+  const j = jars.find(z => z.id === openJar) || { id: openJar, name: jarName(openJar) }, gi = jarGoalInfo(j);
+  box.innerHTML = gi ? `<div class="odo"><div><span>Цель</span><b>${money(gi.bal)} из ${money(j.goal)} · ${Math.round(gi.f*100)}%</b><div class="lbar"><i style="width:${Math.min(gi.f,1)*100}%"></i></div><small>${gi.left > 0 ? "осталось " + money(gi.left) + " · " : ""}${gi.eta}</small></div><button type="button" class="cl-take" id="jGoalBtn">✎</button></div>`
+    : `<button type="button" class="newjar" id="jGoalBtn">🎯 Поставить цель — сколько хочу собрать</button>`;
+  $("jGoalBtn").onclick = () => openJarGoal(j);
+}
+new MutationObserver(() => drawJarGoalBox()).observe($("jarScreen"), { attributes: true, attributeFilter: ["hidden"] });
 /* пока открыто окно, меню или экран поверх — главный экран под ним не листается */
 let lockY = 0;
 function updateLock(){
   const open = ["sheetBg","startBg","drawerBg","pickBg","cfmBg","calcBg"].some(id => $(id).classList.contains("on"))
-    || !$("jarsScreen").hidden || !$("jarScreen").hidden || !$("shopScreen").hidden || !$("recScreen").hidden || !$("carScreen").hidden || !$("subScreen").hidden
+    || !$("jarsScreen").hidden || !$("jarScreen").hidden || !$("shopScreen").hidden || !$("recScreen").hidden || !$("carScreen").hidden || !$("subScreen").hidden || !$("debtScreen").hidden
     || !$("splash").classList.contains("gone");
   const b = document.body;
   if (open && !b.classList.contains("locked")){
@@ -3296,7 +3500,7 @@ function updateLock(){
   }
 }
 const lockObs = new MutationObserver(updateLock);
-["sheetBg","startBg","drawerBg","pickBg","cfmBg","calcBg","jarsScreen","jarScreen","shopScreen","recScreen","carScreen","subScreen"].forEach(id => lockObs.observe($(id), { attributes:true, attributeFilter:["class","hidden"] }));
+["sheetBg","startBg","drawerBg","pickBg","cfmBg","calcBg","jarsScreen","jarScreen","shopScreen","recScreen","carScreen","subScreen","debtScreen"].forEach(id => lockObs.observe($(id), { attributes:true, attributeFilter:["class","hidden"] }));
 
 /* заставка KROFT: при каждом открытии, нажатие — вход в приложение */
 function closeSplash(){ const sp = $("splash"); if (sp.classList.contains("gone")) return; sp.classList.add("gone"); setTimeout(updateLock, 50); }
